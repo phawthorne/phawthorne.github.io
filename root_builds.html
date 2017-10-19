@@ -1,9 +1,19 @@
-<head></head>
+<!DOCTYPE html>
+<html>
+<head>
+	<title>ROOT builds tracker</title>
+</head>
 <body>
-
+<h2>ROOT development builds</h2>
 <ul>
-	<li><a href="index.html">version 1.0.4.</a> 
-
+<li><a href="http://data.naturalcapitalproject.org/nightly-build/root-ui/root_null.post113+ne07d65e1cd61_x64.zip">Build 2017.10.18.3</a></li>
+	<ul> <b>Changes from previous build:</b>
+		<li> Changed name of column in targets table from 'var' to 'name' to be consistent with other tables.</li>
+		<li> Changed name of column in objectives table from 'minmax' to 'weight'.</li>
+		<li> Single point optimization analysis type now functional. To use, type 'single' in the Analysis Type box, and supply numeric weights in the 'weight' column in the objectives table.</li>
+		<li> Can use custom SDU shapefile rather than regular grid. Put the path to the shapefile in the Spatial Decision Unit Shape field. Make sure the shapefile has a field called 'SDU_ID' with unique values.</li>
+		<li> Can provide custom suffix to distinguish output folders for separate optimization runs.</li>
 </ul>
 
 </body>
+</html>
