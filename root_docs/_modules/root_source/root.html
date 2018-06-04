@@ -1,0 +1,796 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>root_source.root &mdash; ROOT  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> ROOT
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/root_inputs.html">Inputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/root_examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/root_source.html">ROOT UI code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/release_notes.html">Release Notes</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">ROOT</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>root_source.root</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for root_source.root</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Main application script&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">exceptions</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="k">import</span> <span class="n">sqrt</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">osgeo</span> <span class="k">import</span> <span class="n">ogr</span>
+
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()])</span>
+
+<span class="kn">import</span> <span class="nn">preprocessing</span>
+<span class="kn">import</span> <span class="nn">optimization</span>
+<span class="kn">import</span> <span class="nn">postprocessing</span>
+<span class="kn">import</span> <span class="nn">arith_parser</span> <span class="k">as</span> <span class="nn">ap</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;natcap.invest.root&#39;</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">RootInputError</span><span class="p">(</span><span class="n">exceptions</span><span class="o">.</span><span class="n">Exception</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<div class="viewcode-block" id="execute"><a class="viewcode-back" href="../../rst/root_source.html#root_source.root.execute">[docs]</a><span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Main entry point for a call from the UI or a calling script</span>
+
+<span class="sd">    Depending on flags, calls :meth:`root_source.preprocessing.execute`,</span>
+<span class="sd">    :meth:`root_source.optimization.execute`, and</span>
+<span class="sd">    :meth:`root_source.postprocessing.execute`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        args (dict): dict with required configuration values.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">internal_args</span> <span class="o">=</span> <span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+
+    <span class="c1"># with open(os.path.join(internal_args[&#39;workspace&#39;], &#39;root_args.json&#39;), &#39;w&#39;) as root_args_file:</span>
+    <span class="c1">#     json.dump(internal_args, root_args_file, indent=2)</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;do_preprocessing&#39;</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;doing pre-processing&#39;</span><span class="p">)</span>
+        <span class="n">preprocessing</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">internal_args</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;skipping pre-processing&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;do_optimization&#39;</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;doing optimization&#39;</span><span class="p">)</span>
+        <span class="n">optimization</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">internal_args</span><span class="p">)</span>
+        <span class="n">postprocessing</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">internal_args</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;skipping optimization&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="parse_args"><a class="viewcode-back" href="../../rst/root_source.html#root_source.root.parse_args">[docs]</a><span class="k">def</span> <span class="nf">parse_args</span><span class="p">(</span><span class="n">ui_args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Validates arguments from the UI and constructs args for analysis functions.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ui_args (dict): input from UI (or equivalent call from a script)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        root_args (dict): validated and parsed arguments</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">root_args</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># base args</span>
+    <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;workspace&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;workspace_dir&#39;</span><span class="p">]</span>
+    <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;baseline_file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;baseline.csv&#39;</span>
+    <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;sdu_id_col&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SDU_ID&#39;</span>
+
+    <span class="k">if</span> <span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;do_preprocessing&#39;</span><span class="p">]:</span>
+        <span class="c1"># input validation block</span>
+        <span class="n">_validate_activity_mask_table</span><span class="p">(</span><span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;activity_mask_table_path&#39;</span><span class="p">])</span>
+        <span class="n">_validate_raster_input_table</span><span class="p">(</span><span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;marginal_raster_table_path&#39;</span><span class="p">])</span>
+        <span class="n">_validate_activity_names_in_amt_and_iprt</span><span class="p">(</span>
+            <span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;activity_mask_table_path&#39;</span><span class="p">],</span>
+            <span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;marginal_raster_table_path&#39;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">_validate_shapefile_input_table</span><span class="p">(</span><span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;serviceshed_shapefiles_table&#39;</span><span class="p">])</span>
+        <span class="n">_validate_cft_table</span><span class="p">(</span>
+            <span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;marginal_raster_table_path&#39;</span><span class="p">],</span>
+            <span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;serviceshed_shapefiles_table&#39;</span><span class="p">],</span>
+            <span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;combined_factor_table_path&#39;</span><span class="p">])</span>
+        <span class="n">_validate_sdu_shape_arg</span><span class="p">(</span><span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;spatial_decision_unit_shape&#39;</span><span class="p">])</span>
+
+        <span class="c1"># simple ui_args -&gt; root_args</span>
+        <span class="c1"># root_args[&#39;mask_raster&#39;] = ui_args[&#39;potential_conversion_mask_path&#39;]</span>
+        <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;activity_mask_table_path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;activity_mask_table_path&#39;</span><span class="p">]</span>
+        <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;grid_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;spatial_decision_unit_shape&#39;</span><span class="p">]</span>
+        <span class="n">cell_area</span> <span class="o">=</span> <span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;spatial_decision_unit_area&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">10000</span>  <span class="c1"># convert from ha to m^2</span>
+        <span class="k">if</span> <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;grid_type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;square&#39;</span><span class="p">:</span>
+            <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;cell_size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">cell_area</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;grid_type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;hexagon&#39;</span><span class="p">:</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">cell_area</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span> <span class="p">)</span>
+            <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;cell_size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">a</span>
+
+        <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;csv_output_folder&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;workspace&#39;</span><span class="p">],</span> <span class="s1">&#39;sdu_value_tables&#39;</span><span class="p">)</span>
+
+        <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;activity_masks&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_process_activity_mask_table</span><span class="p">(</span>
+            <span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;activity_mask_table_path&#39;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;activity_masks&#39;</span><span class="p">])</span>
+        <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;raster_table&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_process_raster_table</span><span class="p">(</span>
+            <span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;marginal_raster_table_path&#39;</span><span class="p">])</span>
+
+        <span class="c1"># process serviceshed table</span>
+        <span class="n">serviceshed_names</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># descriptive name for the serviceshed</span>
+        <span class="n">serviceshed_list</span> <span class="o">=</span> <span class="p">[]</span>   <span class="c1"># file paths for the .shps</span>
+        <span class="n">serviceshed_values</span> <span class="o">=</span> <span class="p">{}</span> <span class="c1"># name of the column in the .shp to use as weighting value (dict indexed by ss name)</span>
+        <span class="k">if</span> <span class="s1">&#39;serviceshed_shapefiles_table&#39;</span> <span class="ow">in</span> <span class="n">ui_args</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;serviceshed_shapefiles_table&#39;</span><span class="p">]):</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;serviceshed_shapefiles_table&#39;</span><span class="p">])</span> <span class="k">as</span> <span class="n">tablefile</span><span class="p">:</span>
+                <span class="n">reader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictReader</span><span class="p">(</span><span class="n">tablefile</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">reader</span><span class="p">:</span>
+                    <span class="n">serviceshed_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+                    <span class="n">serviceshed_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;file_path&#39;</span><span class="p">])</span>
+                    <span class="n">serviceshed_values</span><span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;weight_col&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)]</span>
+            <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;serviceshed_names&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">serviceshed_names</span>
+            <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;serviceshed_list&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">serviceshed_list</span>
+            <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;serviceshed_values&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">serviceshed_values</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;serviceshed_names&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;serviceshed_list&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;serviceshed_values&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># combined_factors_table_path</span>
+        <span class="n">combined_factors</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="s1">&#39;combined_factor_table_path&#39;</span> <span class="ow">in</span> <span class="n">ui_args</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;combined_factor_table_path&#39;</span><span class="p">]):</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;combined_factor_table_path&#39;</span><span class="p">],</span> <span class="s1">&#39;rU&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tablefile</span><span class="p">:</span>
+                <span class="n">reader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictReader</span><span class="p">(</span><span class="n">tablefile</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">reader</span><span class="p">:</span>
+                    <span class="n">combined_factors</span><span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;factors&#39;</span><span class="p">]</span>
+            <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;combined_factors&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">combined_factors</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;combined_factors&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;do_optimization&#39;</span><span class="p">]:</span>
+
+        <span class="n">_validate_objectives_and_constraints_tables</span><span class="p">(</span>
+            <span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;objectives_table_path&#39;</span><span class="p">],</span>
+            <span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;targets_table_path&#39;</span><span class="p">],</span>
+            <span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;workspace_dir&#39;</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># some fixed vals</span>
+        <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;use_linear_vars&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;flatten_objectives&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;result_table_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;optimization_solutions.csv&#39;</span>
+
+        <span class="c1"># simple renames</span>
+        <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;analysis_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;frontier_type&#39;</span><span class="p">]</span>
+        <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;npts&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;number_of_frontier_points&#39;</span><span class="p">])</span>
+
+        <span class="c1"># conditional vals</span>
+        <span class="k">if</span> <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;analysis_type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;single&#39;</span><span class="p">:</span>
+            <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;normalize_objectives&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;normalize_objectives&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="c1"># sub-workspace directory and file names</span>
+        <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;data_folder&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;workspace&#39;</span><span class="p">],</span> <span class="s1">&#39;sdu_value_tables&#39;</span><span class="p">)</span>
+
+        <span class="c1"># allow optional suffix to differentiate optimization runs</span>
+        <span class="k">if</span> <span class="s1">&#39;optimization_suffix&#39;</span> <span class="ow">in</span> <span class="n">ui_args</span> <span class="ow">and</span> <span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;optimization_suffix&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;USING OPTIMIZATION SUFFIX: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;optimization_suffix&#39;</span><span class="p">]))</span>
+            <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;optimization_folder&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;workspace&#39;</span><span class="p">],</span>
+                                                            <span class="s1">&#39;optimizations_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;optimization_suffix&#39;</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;optimization_folder&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;workspace&#39;</span><span class="p">],</span> <span class="s1">&#39;optimizations&#39;</span><span class="p">)</span>
+
+        <span class="c1"># process optimization config tables</span>
+        <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;weights&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_process_objectives_table</span><span class="p">(</span><span class="n">ui_args</span><span class="p">,</span> <span class="n">root_args</span><span class="p">)</span>
+        <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;constraints&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_process_constraints_table</span><span class="p">(</span><span class="n">ui_args</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">root_args</span></div>
+
+
+<span class="k">def</span> <span class="nf">_is_valid_float</span><span class="p">(</span><span class="n">input_string</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="nb">float</span><span class="p">(</span><span class="n">input_string</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="k">def</span> <span class="nf">_process_constraints_table</span><span class="p">(</span><span class="n">ui_args</span><span class="p">):</span>
+    <span class="n">constraints</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;targets_table_path&#39;</span><span class="p">])</span> <span class="k">as</span> <span class="n">tablefile</span><span class="p">:</span>
+        <span class="n">reader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictReader</span><span class="p">(</span><span class="n">tablefile</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">reader</span><span class="p">:</span>
+            <span class="n">constraints</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;cons_type&#39;</span><span class="p">],</span> <span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">])))</span>
+    <span class="k">return</span> <span class="n">constraints</span>
+
+
+<span class="k">def</span> <span class="nf">_process_activity_mask_table</span><span class="p">(</span><span class="n">amtpath</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reads the activity mask table into a dictionary. The expected format of the</span>
+<span class="sd">    table is cols &#39;activity&#39;, &#39;mask_path&#39;, and corresponding rows.</span>
+<span class="sd">    The created dictionary will have the activities as keys and paths as values.</span>
+<span class="sd">    :param amtpath:</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">amtdict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">amtpath</span><span class="p">,</span> <span class="s1">&#39;rU&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>  <span class="c1"># discard header</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">row_fields</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">row</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+            <span class="n">amtdict</span><span class="p">[</span><span class="n">row_fields</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">row_fields</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">amtdict</span>
+
+
+<span class="k">def</span> <span class="nf">_process_raster_table</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    TODO: refactor to preserve jsonability</span>
+<span class="sd">        either dump class in favor of nested dict or write custom to/from json funcs</span>
+
+<span class="sd">    returns a class with structure: raster_lookup[activity][factorname] = rasterpath</span>
+<span class="sd">    behaves like a dictionary for lookup, but also has attributes</span>
+<span class="sd">    rastertable.activity_names</span>
+<span class="sd">    rastertable.factor_names</span>
+<span class="sd">    </span>
+<span class="sd">    :param filename: </span>
+<span class="sd">    :return: </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">class</span> <span class="nc">RasterTable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span> <span class="o">=</span> <span class="n">filepath</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">raster_lookup</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">factor_names</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;rU&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tablefile</span><span class="p">:</span>
+                <span class="n">header</span> <span class="o">=</span> <span class="n">tablefile</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+                <span class="n">header_fields</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">header</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+                <span class="k">assert</span> <span class="n">header_fields</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;name&#39;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">activity_names</span> <span class="o">=</span> <span class="n">header_fields</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+                <span class="k">for</span> <span class="n">activity</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">activity_names</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">raster_lookup</span><span class="p">[</span><span class="n">activity</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">tablefile</span><span class="p">:</span>
+                    <span class="n">row_fields</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">row</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+                    <span class="n">factor_name</span> <span class="o">=</span> <span class="n">row_fields</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">factor_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">factor_name</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">activity</span><span class="p">,</span> <span class="n">filepath</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">activity_names</span><span class="p">,</span> <span class="n">row_fields</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">raster_lookup</span><span class="p">[</span><span class="n">activity</span><span class="p">][</span><span class="n">factor_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">filepath</span>
+
+        <span class="k">def</span> <span class="nf">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">raster_lookup</span>
+
+        <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">raster_lookup</span><span class="p">[</span><span class="n">item</span><span class="p">]</span>
+
+        <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span>
+
+    <span class="k">return</span> <span class="n">RasterTable</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_process_objectives_table</span><span class="p">(</span><span class="n">ui_args</span><span class="p">,</span> <span class="n">root_args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    There are two distinct cases based on the analysis type:</span>
+<span class="sd">    weight_table: for this analysis, we just pass the filename on as the weights</span>
+<span class="sd">    others: these will have provided a table with mins/maxs that we parse</span>
+<span class="sd">        return a dict {factorname: +/- 1.0, ...}</span>
+
+<span class="sd">    :param ui_args:</span>
+<span class="sd">    :param root_args:</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">root_args</span><span class="p">[</span><span class="s1">&#39;analysis_type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;weight_table&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;objectives_table_path&#39;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">optimization_objectives</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">min_choices</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Minimize&#39;</span><span class="p">,</span> <span class="s1">&#39;minimize&#39;</span><span class="p">,</span> <span class="s1">&#39;Min&#39;</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="s1">&#39;Minimum&#39;</span><span class="p">,</span> <span class="s1">&#39;minimum&#39;</span><span class="p">]</span>
+        <span class="n">max_choices</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Maximize&#39;</span><span class="p">,</span> <span class="s1">&#39;maximize&#39;</span><span class="p">,</span> <span class="s1">&#39;Max&#39;</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">,</span> <span class="s1">&#39;Maximum&#39;</span><span class="p">,</span> <span class="s1">&#39;maximum&#39;</span><span class="p">]</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ui_args</span><span class="p">[</span><span class="s1">&#39;objectives_table_path&#39;</span><span class="p">],</span> <span class="s1">&#39;rU&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tablefile</span><span class="p">:</span>
+            <span class="n">var_names</span> <span class="o">=</span> <span class="n">tablefile</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+            <span class="n">minmax</span> <span class="o">=</span> <span class="n">tablefile</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">mm</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">var_names</span><span class="p">,</span> <span class="n">minmax</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">mm</span> <span class="ow">in</span> <span class="n">min_choices</span><span class="p">:</span>
+                    <span class="n">optimization_objectives</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
+                <span class="k">elif</span> <span class="n">mm</span> <span class="ow">in</span> <span class="n">max_choices</span><span class="p">:</span>
+                    <span class="n">optimization_objectives</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;invalid &quot;weight&quot; value: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mm</span><span class="p">))</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;invalid &quot;weight&quot; value: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mm</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">optimization_objectives</span>
+
+
+<span class="k">def</span> <span class="nf">_validate_activity_mask_table</span><span class="p">(</span><span class="n">activity_mask_table_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check for column names and file existence.</span>
+
+<span class="sd">    Expect a table with columns &#39;activity&#39; and &#39;mask_path&#39;. Entries in &#39;mask_path&#39; must point</span>
+<span class="sd">    to existing files. This function only confirms existence, not filetype.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        activity_mask_table_path:</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">amt</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">activity_mask_table_path</span><span class="p">)</span>
+
+    <span class="n">amt_req_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;activity&#39;</span><span class="p">,</span> <span class="s1">&#39;mask_path&#39;</span><span class="p">]</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Error in AM table: requires two columns named activity and mask_path&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">amt</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">amt_req_cols</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">RootInputError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">rc</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">amt</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">amt_req_cols</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="n">rc</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">RootInputError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">fp</span> <span class="ow">in</span> <span class="n">amt</span><span class="p">[</span><span class="s1">&#39;mask_path&#39;</span><span class="p">]:</span>
+        <span class="n">not_found</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">amt</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">amt</span><span class="p">[</span><span class="n">c</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+                    <span class="n">not_found</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">not_found</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Error in AM table: the following mask rasters could not be located. Please check the filepaths:</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">not_found</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">RootInputError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_validate_raster_input_table</span><span class="p">(</span><span class="n">raster_table_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Expected file structure is</span>
+
+<span class="sd">    .. csv-table:: Raster Table</span>
+<span class="sd">        :header: name, activity1, activity2, ...</span>
+
+<span class="sd">        factor1, filepath, filepath, ...</span>
+<span class="sd">        factor2, filepath, filepath, ...</span>
+
+
+<span class="sd">    Checks to make sure that all filepaths point to existing files.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        raster_table_path (string): path to csv file to validate</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        RootInputError</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rt</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">raster_table_path</span><span class="p">)</span>
+    <span class="n">not_found</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">rt</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">rt</span><span class="p">[</span><span class="n">c</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+                <span class="n">not_found</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">not_found</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Error in IPR table: the following rasters could not be located. Please check the filepaths:</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">not_found</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">RootInputError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_validate_activity_names_in_amt_and_iprt</span><span class="p">(</span><span class="n">amt_path</span><span class="p">,</span> <span class="n">iprt_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks to make sure that the same activity names are use in the activity mask table and impact</span>
+<span class="sd">    potential raster table. Each activity named in the IPRT should have a mask, and vice versa.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        amt_path:</span>
+<span class="sd">        iprt_path:</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        RootInputError</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">amt</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">amt_path</span><span class="p">)</span>
+    <span class="n">iprt</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">iprt_path</span><span class="p">)</span>
+
+    <span class="n">amt_activities</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">amt</span><span class="p">[</span><span class="s1">&#39;activity&#39;</span><span class="p">])</span>
+    <span class="n">iprt_activities</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">iprt</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+    <span class="n">match</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">amt_activities</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">a</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">iprt_activities</span><span class="p">:</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">iprt_activities</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">a</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">amt_activities</span><span class="p">:</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">match</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Error: activities do not match in Activity Mask table and Impact Potential Raster table. Please check spelling and missing/extra values: </span><span class="si">{}</span><span class="s2"> vs </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">amt_activities</span><span class="p">,</span> <span class="n">iprt_activities</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">RootInputError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_validate_shapefile_input_table</span><span class="p">(</span><span class="n">shapefile_table_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks for:</span>
+<span class="sd">    1. correct column names</span>
+<span class="sd">    2. existence of listed files</span>
+<span class="sd">    3. listed shapefile columns (the weight cols) exist in the shapefiles</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        shapefile_table_path (string): path to table to validate</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        RootInputError</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">shapefile_table_path</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">shapefile_table_path</span><span class="p">)</span>
+
+    <span class="c1"># check columns are correct</span>
+    <span class="n">correct_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;file_path&#39;</span><span class="p">,</span> <span class="s1">&#39;weight_col&#39;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">correct_cols</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">t</span> <span class="o">!=</span> <span class="n">c</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">RootInputError</span><span class="p">(</span><span class="s1">&#39;Error in SWM table: columns must be named </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">correct_cols</span><span class="p">)))</span>
+
+    <span class="c1"># check all files exist</span>
+    <span class="n">not_found</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">table</span><span class="p">[</span><span class="s1">&#39;file_path&#39;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+            <span class="n">not_found</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">not_found</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Error in SWM table: the following shapefiles could not be located. Please check the filepaths:</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">not_found</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">RootInputError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="c1"># check that the columns exist</span>
+    <span class="n">cols_not_found</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">ogr</span><span class="o">.</span><span class="n">Open</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;file_path&#39;</span><span class="p">])</span>
+        <span class="n">lyr</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">GetLayer</span><span class="p">()</span>
+        <span class="n">field_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">field</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">lyr</span><span class="o">.</span><span class="n">schema</span><span class="p">]</span>
+        <span class="n">weight_cols</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;weight_col&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">wc</span> <span class="ow">in</span> <span class="n">weight_cols</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">wc</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">field_names</span><span class="p">:</span>
+                <span class="n">cols_not_found</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">wc</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cols_not_found</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Error in SWM table: The following weight cols could not be found in the shapefile: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">cols_not_found</span>
+        <span class="p">)</span>
+        <span class="k">raise</span> <span class="n">RootInputError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_validate_sdu_shape_arg</span><span class="p">(</span><span class="n">arg_val</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        arg_val:</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">arg_val</span> <span class="o">==</span> <span class="s1">&#39;hexagon&#39;</span> <span class="ow">or</span> <span class="n">arg_val</span> <span class="o">==</span> <span class="s1">&#39;square&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">arg_val</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Error in SDU shape: invalid value &quot;</span><span class="si">{}</span><span class="s1">&quot;. &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">arg_val</span><span class="p">)</span>
+        <span class="n">msg</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Spatial Decision Unit Shape must be square, hexagon, or a path to a shapefile.&#39;</span>
+        <span class="k">raise</span> <span class="n">RootInputError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_validate_cft_table</span><span class="p">(</span><span class="n">rt_path</span><span class="p">,</span> <span class="n">st_path</span><span class="p">,</span> <span class="n">cft_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        rt_path:</span>
+<span class="sd">        st_path:</span>
+<span class="sd">        cft_path:</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cft_path</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="n">cft</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">cft_path</span><span class="p">)</span>
+
+    <span class="c1"># get factors listed in raster table</span>
+    <span class="n">rt</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">rt_path</span><span class="p">)</span>
+    <span class="n">raster_factors</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">rt</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+    <span class="n">activity_area_factors</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_ha&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">rt</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+
+    <span class="c1"># get factors listed in shapefile table (if provided - shapefile table is optional)</span>
+    <span class="n">shape_factors</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">st_path</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">st_path</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">st</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">sname</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+            <span class="n">shape_factors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sname</span><span class="p">)</span>
+            <span class="n">wcols</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;weight_col&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">wc</span> <span class="ow">in</span> <span class="n">wcols</span><span class="p">:</span>
+                <span class="n">shape_factors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sname</span><span class="p">,</span> <span class="n">wc</span><span class="p">))</span>
+
+    <span class="c1"># combined factors - also include math names as valid</span>
+    <span class="n">all_factors</span> <span class="o">=</span> <span class="n">raster_factors</span> <span class="o">+</span> <span class="n">shape_factors</span> <span class="o">+</span> <span class="n">activity_area_factors</span> <span class="o">+</span> <span class="n">ap</span><span class="o">.</span><span class="n">ALL_AP_TOKENS</span>
+
+    <span class="n">invalid_factors</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cft</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="n">factors</span> <span class="o">=</span> <span class="n">ap</span><span class="o">.</span><span class="n">_tokenize</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;factors&#39;</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">factors</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">f</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">all_factors</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                    <span class="n">invalid_factors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">invalid_factors</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Error in CF table: invalid factors found: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">invalid_factors</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">RootInputError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_validate_objectives_and_constraints_tables</span><span class="p">(</span><span class="n">obj_table_file</span><span class="p">,</span> <span class="n">cons_table_file</span><span class="p">,</span> <span class="n">workspace</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        obj_table_file:</span>
+<span class="sd">        cons_table_file:</span>
+<span class="sd">        workspace:</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">baseline_sdu_stats_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">workspace</span><span class="p">,</span> <span class="s1">&#39;sdu_value_tables&#39;</span><span class="p">,</span> <span class="s1">&#39;baseline.csv&#39;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">baseline_sdu_stats_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">header_row</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">factors</span> <span class="o">=</span> <span class="n">header_row</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+
+    <span class="c1"># check objectives table:</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">obj_table_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">header_row</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">objectives</span> <span class="o">=</span> <span class="n">header_row</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+        <span class="n">not_found</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">objectives</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">obj</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">factors</span><span class="p">:</span>
+                <span class="n">not_found</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">not_found</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Error in Objectives table. The following factors were not found in the sdu value tables: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">not_found</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="n">RootInputError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="c1"># check constraints table:</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">cons_table_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">header_row</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>  <span class="c1">#skip header</span>
+        <span class="n">not_found</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">row_vals</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+            <span class="n">c_expr</span> <span class="o">=</span> <span class="n">row_vals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">c_factors</span> <span class="o">=</span> <span class="n">ap</span><span class="o">.</span><span class="n">_tokenize</span><span class="p">(</span><span class="n">c_expr</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">c_factors</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">f</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">factors</span> <span class="ow">and</span> <span class="n">f</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ap</span><span class="o">.</span><span class="n">ALL_AP_TOKENS</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                        <span class="k">continue</span>
+                    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                        <span class="n">not_found</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">not_found</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Error in Targets table. The following factors were not found in the sdu value tables: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">not_found</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="n">RootInputError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">natcap.invest.iui</span> <span class="k">import</span> <span class="n">modelui</span>
+    <span class="kn">import</span> <span class="nn">natcap.invest.iui</span>
+
+    <span class="n">json_uri</span> <span class="o">=</span> <span class="s1">&#39;root.json&#39;</span>
+    <span class="n">modelui</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">json_uri</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Peter Hawthorne.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

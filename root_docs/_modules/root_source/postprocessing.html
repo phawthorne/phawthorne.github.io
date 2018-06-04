@@ -1,0 +1,289 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>root_source.postprocessing &mdash; ROOT  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> ROOT
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/root_inputs.html">Inputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/root_examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/root_source.html">ROOT UI code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/release_notes.html">Release Notes</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">ROOT</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>root_source.postprocessing</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for root_source.postprocessing</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Performs post-optimization analysis.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">from</span> <span class="nn">osgeo</span> <span class="k">import</span> <span class="n">ogr</span>
+<span class="kn">from</span> <span class="nn">osgeo</span> <span class="k">import</span> <span class="n">osr</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+
+<div class="viewcode-block" id="execute"><a class="viewcode-back" href="../../rst/root_source.html#root_source.postprocessing.execute">[docs]</a><span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Constructs agreement map table and shapefile.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        args (dict): ROOT problem configuration dict</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">solution_folder</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s1">&#39;optimization_folder&#39;</span><span class="p">]</span>
+    <span class="n">agreement_map_files</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">solution_folder</span><span class="p">,</span> <span class="s1">&#39;summed_choices.csv&#39;</span><span class="p">)</span>
+    <span class="n">adf</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">agreement_map_files</span><span class="p">)</span>
+    <span class="n">activity_names</span> <span class="o">=</span> <span class="n">adf</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+
+    <span class="k">def</span> <span class="nf">trim_to_10chars</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">10</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">s</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">s</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span>
+
+    <span class="n">field_names</span> <span class="o">=</span> <span class="p">{</span><span class="n">a</span><span class="p">:</span> <span class="n">trim_to_10chars</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">activity_names</span><span class="p">}</span>
+    <span class="n">adf</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;SDU_ID&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># duplicate sdu_grid to optimizations/agreement.shp adding agreement column</span>
+    <span class="n">driver</span> <span class="o">=</span> <span class="n">ogr</span><span class="o">.</span><span class="n">GetDriverByName</span><span class="p">(</span><span class="s1">&#39;ESRI Shapefile&#39;</span><span class="p">)</span>
+    <span class="n">sdu_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s1">&#39;workspace&#39;</span><span class="p">],</span> <span class="s1">&#39;sdu_grid.shp&#39;</span><span class="p">)</span>
+    <span class="n">target_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">solution_folder</span><span class="p">,</span> <span class="s1">&#39;agreement_map.shp&#39;</span><span class="p">)</span>
+
+    <span class="c1"># open base grid file</span>
+    <span class="n">sdu_file</span> <span class="o">=</span> <span class="n">ogr</span><span class="o">.</span><span class="n">Open</span><span class="p">(</span><span class="n">sdu_file_path</span><span class="p">)</span>
+    <span class="n">orig_layer</span> <span class="o">=</span> <span class="n">sdu_file</span><span class="o">.</span><span class="n">GetLayer</span><span class="p">()</span>
+    <span class="n">spatial_ref</span> <span class="o">=</span> <span class="n">osr</span><span class="o">.</span><span class="n">SpatialReference</span><span class="p">(</span><span class="n">orig_layer</span><span class="o">.</span><span class="n">GetSpatialRef</span><span class="p">()</span><span class="o">.</span><span class="n">ExportToWkt</span><span class="p">())</span>
+
+    <span class="c1"># create new grid shapefile and define fields</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">target_file_path</span><span class="p">):</span>
+        <span class="n">driver</span><span class="o">.</span><span class="n">DeleteDataSource</span><span class="p">(</span><span class="n">target_file_path</span><span class="p">)</span>
+    <span class="n">target_file</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">CreateDataSource</span><span class="p">(</span><span class="n">target_file_path</span><span class="p">)</span>
+    <span class="n">target_layer</span> <span class="o">=</span> <span class="n">target_file</span><span class="o">.</span><span class="n">CreateLayer</span><span class="p">(</span>
+        <span class="s1">&#39;choice_ct&#39;</span><span class="p">,</span> <span class="n">spatial_ref</span><span class="p">,</span> <span class="n">ogr</span><span class="o">.</span><span class="n">wkbPolygon</span>
+    <span class="p">)</span>
+    <span class="n">target_layer</span><span class="o">.</span><span class="n">CreateField</span><span class="p">(</span>
+        <span class="n">ogr</span><span class="o">.</span><span class="n">FieldDefn</span><span class="p">(</span><span class="s1">&#39;SDU_ID&#39;</span><span class="p">,</span> <span class="n">ogr</span><span class="o">.</span><span class="n">OFTInteger</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">for</span> <span class="n">activity</span> <span class="ow">in</span> <span class="n">activity_names</span><span class="p">:</span>
+        <span class="n">target_layer</span><span class="o">.</span><span class="n">CreateField</span><span class="p">(</span>
+            <span class="n">ogr</span><span class="o">.</span><span class="n">FieldDefn</span><span class="p">(</span><span class="n">field_names</span><span class="p">[</span><span class="n">activity</span><span class="p">],</span> <span class="n">ogr</span><span class="o">.</span><span class="n">OFTReal</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="n">target_layer_defn</span> <span class="o">=</span> <span class="n">target_layer</span><span class="o">.</span><span class="n">GetLayerDefn</span><span class="p">()</span>
+
+    <span class="c1"># loop through features in original grid</span>
+    <span class="c1"># add agreement score and geoms to target layer</span>
+    <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">orig_layer</span><span class="p">:</span>
+        <span class="n">feature_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">GetField</span><span class="p">(</span><span class="s1">&#39;SDU_ID&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">feature_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">adf</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="n">geom</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">GetGeometryRef</span><span class="p">()</span>
+
+        <span class="n">new_feature</span> <span class="o">=</span> <span class="n">ogr</span><span class="o">.</span><span class="n">Feature</span><span class="p">(</span><span class="n">target_layer_defn</span><span class="p">)</span>
+        <span class="n">new_feature</span><span class="o">.</span><span class="n">SetGeometry</span><span class="p">(</span><span class="n">geom</span><span class="p">)</span>
+        <span class="n">new_feature</span><span class="o">.</span><span class="n">SetField</span><span class="p">(</span><span class="s1">&#39;SDU_ID&#39;</span><span class="p">,</span> <span class="n">feature_id</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">activity</span> <span class="ow">in</span> <span class="n">activity_names</span><span class="p">:</span>
+            <span class="n">score</span> <span class="o">=</span> <span class="n">adf</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">feature_id</span><span class="p">][</span><span class="n">activity</span><span class="p">]</span>
+            <span class="n">new_feature</span><span class="o">.</span><span class="n">SetField</span><span class="p">(</span><span class="n">field_names</span><span class="p">[</span><span class="n">activity</span><span class="p">],</span> <span class="n">score</span><span class="p">)</span>
+        <span class="n">target_layer</span><span class="o">.</span><span class="n">CreateFeature</span><span class="p">(</span><span class="n">new_feature</span><span class="p">)</span>
+
+    <span class="n">target_layer</span><span class="o">.</span><span class="n">SyncToDisk</span><span class="p">()</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Peter Hawthorne.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

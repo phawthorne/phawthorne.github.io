@@ -1,0 +1,528 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Documentation for ROOT UI inputs &mdash; ROOT  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Examples" href="root_examples.html" />
+    <link rel="prev" title="Introduction" href="intro.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> ROOT
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Inputs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#general">General</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#preprocessing">Preprocessing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#optimization">Optimization</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="root_examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="root_source.html">ROOT UI code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">Release Notes</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ROOT</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Documentation for ROOT UI inputs</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/rst/root_inputs.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="documentation-for-root-ui-inputs">
+<h1>Documentation for ROOT UI inputs<a class="headerlink" href="#documentation-for-root-ui-inputs" title="Permalink to this headline">¶</a></h1>
+<p>This documentation walks through each of the fields in ROOT’s UI window, explaining the expected input and choices. Most of the work of setting up a ROOT analysis comes in preparing the input data and configuring a set of tables that describe the analysis to perform.</p>
+<blockquote>
+<div><div class="admonition important">
+<p class="first admonition-title">Important</p>
+<ul class="last simple">
+<li><strong>Rasters</strong>: All rasters must be prepared to have identical extent (bounding boxes) and cell sizes. Please complete this resampling operation using a GIS program or code before running ROOT.</li>
+<li><strong>Tables</strong>: All tables must be saved in comma separated variable (csv) format, not xlsx or other spreadsheet formats.</li>
+</ul>
+</div>
+<div class="admonition tip">
+<p class="first admonition-title">Tip</p>
+<p>Many of the input tables require the user to provide filepaths. Here are easy ways to get these paths:</p>
+<ul class="last simple">
+<li><strong>Windows</strong>: Hold shift and right click the file. Select “Copy as path” in the menu that appears. You can then paste this directly into the csv file.</li>
+<li><strong>Mac</strong>: Right click the file, then press and hold the option key. Select “Copy _ as Pathname”, and the text is available to paste into the csv file.</li>
+</ul>
+</div>
+</div></blockquote>
+<div class="section" id="general">
+<h2>General<a class="headerlink" href="#general" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><strong>Workspace</strong>: Folder where results from ROOT will be saved</li>
+</ul>
+</div>
+<div class="section" id="preprocessing">
+<h2>Preprocessing<a class="headerlink" href="#preprocessing" title="Permalink to this headline">¶</a></h2>
+<p>The preprocessing step prepares the spatial inputs (spatial decision unit map, rasters, and shapefiles) for optimization.</p>
+<ul>
+<li><p class="first"><strong>Do preprocessing</strong>: If checked, ROOT performs the preprocessing step. If not, ROOT will skip the preprocessing step, which saves time in experimenting with different optimization analyses if preprocessing is already complete.</p>
+</li>
+<li><p class="first"><strong>Activity mask table</strong>: This table points to rasters that indicate valid locations for each activity.</p>
+<blockquote>
+<div><ul>
+<li><p class="first"><em>Activity masks</em>: Rasters with a value of 1 where an activity could take place, and NODATA elsewhere.</p>
+</li>
+<li><p class="first"><em>Table format</em>: This table should have headers <code class="xref py py-attr docutils literal notranslate"><span class="pre">activity</span></code> and <code class="xref py py-attr docutils literal notranslate"><span class="pre">mask_path</span></code>. The entries in the first column should be names of each potential activity and the entries in the second column should be complete paths to the corresponding rasters.</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">activity</th>
+<th class="head">mask_path</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>activity1</td>
+<td>filepath</td>
+</tr>
+<tr class="row-odd"><td>activity2</td>
+<td>filepath</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Impact potential raster table</strong>: This table points to the rasters that give the potential impact of each activity on each of the metrics with raster data.</p>
+<blockquote>
+<div><ul>
+<li><p class="first"><em>Impact potential raster</em>: Raster for a particular activity and metric that specifies the value of each pixel being selected for the activity.</p>
+</li>
+<li><p class="first"><em>Table format</em>: The table should be a csv file with the following structure:</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">activity</th>
+<th class="head">factor1</th>
+<th class="head">factor2</th>
+<th class="head">…</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>activity1</td>
+<td>filepath</td>
+<td>filepath</td>
+<td>…</td>
+</tr>
+<tr class="row-odd"><td>activity2</td>
+<td>filepath</td>
+<td>filepath</td>
+<td>…</td>
+</tr>
+</tbody>
+</table>
+<p>The upper-left value should be <code class="xref py py-attr docutils literal notranslate"><span class="pre">activity</span></code>, but the other entries should be replaced with corresponding activity names, factor names, or the correct filepath.</p>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Spatial weighting maps table</strong>: This table points to shapefiles that specify weighting factors.</p>
+<blockquote>
+<div><ul>
+<li><p class="first"><em>Spatial weighting shapefile</em>: For each named column in a shapefile, ROOT will calculate the average value for each SDU. These values can be used as weighting factors.</p>
+</li>
+<li><p class="first"><em>Table format</em>:</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">name</th>
+<th class="head">file_path</th>
+<th class="head">weight_col</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>mapname1</td>
+<td>filepath</td>
+<td>col1 col2 …</td>
+</tr>
+<tr class="row-odd"><td>mapname2</td>
+<td>filepath</td>
+<td>col1 col2 …</td>
+</tr>
+</tbody>
+</table>
+<p>In this table, entries in the first column, <code class="xref py py-attr docutils literal notranslate"><span class="pre">name</span></code>, are a user-specified name for the map file. Names for values from each column will be created by combining the map name and column name (e.g. <code class="xref py py-attr docutils literal notranslate"><span class="pre">mapname1_col1</span></code>). Entries in the second column are the path to the shape files. The third column consists of the names of columns of interest from the given shapefile, with the names separated by spaces, <em>not commas</em>.</p>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Composite factor table</strong>: Allows the user to combine multiple factors using spreadsheet-like expressions to create new ones. These new factors are available to use as constraints or objectives in the optimization step.</p>
+<blockquote>
+<div><ul>
+<li><p class="first"><em>Table format</em>: The table must have columns <code class="xref py py-attr docutils literal notranslate"><span class="pre">name</span></code> and <code class="xref py py-attr docutils literal notranslate"><span class="pre">formula</span></code>:</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">name</th>
+<th class="head">formula</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>new_factor1</td>
+<td>f1 * f2</td>
+</tr>
+<tr class="row-odd"><td>new_factor2</td>
+<td>sqrt(10 * f3 + 5 * f4)</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p class="first"><em>Formulas</em>: The formulas tell ROOT how to combine factors from the raster or shapefile inputs to generate new factors. The new factor is calculated for each SDU and each activity. Any of the basic mathematical operations can be used (+, -, *, /, ^), as well as numbers, parentheses for grouping, and the functions log, sqrt, and abs. Additionally, sum, min, and max can be used to refer to the corresponding values for a particular factor (<em>Note</em>: these are applied separately for each activity - if this is not what you want, you must calculate the overall max yourself).</p>
+</li>
+<li><p class="first"><em>Activity area</em> note that preprocessing will create a factor for each activity called <code class="xref py py-attr docutils literal notranslate"><span class="pre">*activity*_ha</span></code> (using the activity names assigned in the activity mask table). These columns can be used in the composite factor table, e.g. to create a cost variable by multiplying by a cost per hectare for the activity.</p>
+</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Spatial decision unit shape</strong>: Select either a custom SDU shapefile or a regular grid.</p>
+<blockquote>
+<div><ul class="simple">
+<li><em>Custom shapefile</em>: in order to use a specific shapefile for the SDUs, enter the path to the file in the textbox. The shapefile must contain a field <code class="xref py py-attr docutils literal notranslate"><span class="pre">SDU_ID</span></code> with unique ID numbers for each SDU polygon.</li>
+<li><em>Regular grid</em>: in order to have ROOT automatically create an SDU grid, enter either <code class="xref py py-attr docutils literal notranslate"><span class="pre">square</span></code> or <code class="xref py py-attr docutils literal notranslate"><span class="pre">hexagon</span></code> in the text field.</li>
+</ul>
+<p>The SDU shapefile will either be copied or created as sdu_grid.shp in the workspace.</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Spatial decision unit area</strong>: Specify the area of each SDU polygon for regular grids. Ignored for custom shapefile.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="optimization">
+<h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first"><strong>Do optimization</strong>: If checked, ROOT performs the optimization step.</p>
+</li>
+<li><p class="first"><strong>Optimization results suffix</strong>: By default, the results of an optimization run are stored in <code class="xref py py-attr docutils literal notranslate"><span class="pre">workspace/optimizations</span></code>. This field can be used to distinguish results from different runs. If a sufix is provided, the results will be saved to <code class="xref py py-attr docutils literal notranslate"><span class="pre">workspace/optimizations_suffix</span></code>.</p>
+</li>
+<li><p class="first"><strong>Analysis type</strong>: Tells ROOT which of several optimization analyses to perform. Options are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><em>weight_table</em>: Solves one or more optimization runs with user-specified weights assigned to each objective.</li>
+<li><em>n_dim_frontier</em>: similar to weight_table, except ROOT will randomly generate weights for each objective for each run.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Number of frontier points</strong>: Number of optimizations to run (only required for n_dim_frontier analyses)</p>
+</li>
+<li><p class="first"><strong>Objectives table</strong>: This table identifies the factors to optimize for, and additional information depending on the analysis type. For both options, the column headers should be the names of the factors to treat as objectives. Any numeric column from the csv files in <code class="xref py py-attr docutils literal notranslate"><span class="pre">workspace/sdu_value_tables</span></code> can be used. In most cases, these will be the fields named in the tables from the preprocessing steps, although users are free to add additional columns to the SDU value tables containing data from other sources. Note that the columns must be added to the tables for all activities.</p>
+<blockquote>
+<div><p>The expected format for each analysis type is:</p>
+<ul>
+<li><p class="first"><em>weight_table</em>: Each row represents an optimization analysis with particular weights assigned to each factor. Use positive weights to maximize an objective, negative weights to minimize it.</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">factor1</th>
+<th class="head">factor2</th>
+<th class="head">factor3</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>w <sub>11</sub></td>
+<td>w <sub>12</sub></td>
+<td>w <sub>13</sub></td>
+</tr>
+<tr class="row-odd"><td>w <sub>21</sub></td>
+<td>w <sub>22</sub></td>
+<td>w <sub>23</sub></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p class="first"><em>n_dim_frontier</em>: The table just specifies whether to maximize or minimize each factor:</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">factor1</th>
+<th class="head">factor2</th>
+<th class="head">factor3</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>min</td>
+<td>min</td>
+<td>max</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Targets table</strong>: Allows the user to set targets (constraints) for the optimizations. The table should have columns <code class="xref py py-attr docutils literal notranslate"><span class="pre">formula</span></code>, <code class="xref py py-attr docutils literal notranslate"><span class="pre">cons_type</span></code>, and <code class="xref py py-attr docutils literal notranslate"><span class="pre">value</span></code>.</p>
+<blockquote>
+<div><blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">formula</th>
+<th class="head">cons_type</th>
+<th class="head">value</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>f1 + f2 + f3</td>
+<td>&lt;=</td>
+<td><em>budget</em></td>
+</tr>
+<tr class="row-odd"><td>f4 + f5</td>
+<td>&gt;=</td>
+<td><em>target</em></td>
+</tr>
+<tr class="row-even"><td>f6</td>
+<td>&gt;= <em>target</em></td>
+<td>&#160;</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<ul class="simple">
+<li><em>formula</em>: An expression following the same rules as the expressions for the Composite Factor Table.</li>
+<li><em>cons_type</em>: one of =, &lt;=, or &gt;=.</li>
+<li><em>value</em>: the numerical value for the target (constraint).</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="root_examples.html" class="btn btn-neutral float-right" title="Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="intro.html" class="btn btn-neutral" title="Introduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Peter Hawthorne.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
