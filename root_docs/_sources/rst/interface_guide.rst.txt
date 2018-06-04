@@ -1,5 +1,5 @@
-Documentation for ROOT UI inputs
-================================
+Documentation for ROOT interface inputs
+=======================================
 
 This documentation walks through each of the fields in ROOT's UI window, explaining the expected input and choices. Most of the work of setting up a ROOT analysis comes in preparing the input data and configuring a set of tables that describe the analysis to perform.
 

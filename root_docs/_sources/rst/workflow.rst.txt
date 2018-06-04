@@ -1,0 +1,27 @@
+ROOT Workflow
+=============
+
+This section describes the steps in the ROOT analyis.
+
+Key terms
+----------
+
+
+Overview
+---------
+
+
+Data preparation
+----------------
+
+
+Preprocessing
+--------------
+
+
+Optimization
+------------
+
+
+Outputs
+--------
