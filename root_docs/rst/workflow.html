@@ -88,7 +88,8 @@
 <li class="toctree-l2"><a class="reference internal" href="#data-preparation">Data preparation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#preprocessing">Preprocessing</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#sdu-map">SDU map</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#rasters">Rasters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#activity-boundary-rasters">Activity boundary rasters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#impact-potential-rasters">Impact potential rasters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#shapefiles">Shapefiles</a></li>
 </ul>
 </li>
@@ -175,11 +176,13 @@
 <h2>Key terms<a class="headerlink" href="#key-terms" title="Permalink to this headline">¶</a></h2>
 <dl class="glossary docutils">
 <dt id="term-activity">Activity</dt>
-<dd>ROOT is used to inform spatial problems about where to undertake different management actions or changes. We use the term “activity” to refer generally to any action or investment that needs to be spatially allocated. The result of a single optimization from ROOT will be a table indicating which activities, if any, to assign to each spatial decision unit. Some of these activities may not require any physical action (e.g. allocation of protection to natural areas).</dd>
+<dd>ROOT is used to inform spatial decisions about where to undertake different management actions or changes. We use the term “activity” to refer generally to any action, investment, or decision that needs to be spatially allocated. The result of a single optimization from ROOT will be a table indicating which activities, if any, to assign to each spatial decision unit. Some of these activities may not require any physical action (e.g. allocation of protection to natural areas).</dd>
 <dt id="term-factor">Factor</dt>
 <dd>The analyses that ROOT performs are based on characteristics of each spatial decision unit and activity that determine whether an activity allocation is good for the specified objectives, or obeys rules (constraints) that the decision is subject to. We refer generally to any of these characteristics as a ‘factor’. Specifically, factors show up as the columns in the tables output from the preprocessing steps, and are calculated from the raster and shape inputs.</dd>
 <dt id="term-spatial-decision-unit-sdu">Spatial decision unit (SDU)</dt>
 <dd>Rather than making pixel-level decisions, ROOT optimizes activity allocation at a more aggregated spatial scale. The unit of decision is called the spatial decision unit (SDU). These can be customized by the user, or ROOT can create a grid of equal-area squares or hexagons.</dd>
+<dt id="term-agreement-map">Agreement map</dt>
+<dd>A full run of ROOT generally entails many separate optimizations, each with different weights assigned to the objectives. The agreement map is a summary output that indicates how often the same allocation is made regardless of the particular weights. This allows the user to identify allocations that make sense across a wide range of preferences and those that are much more sensitive.</dd>
 </dl>
 </div>
 <div class="section" id="data-preparation">
@@ -192,10 +195,16 @@
 <h3>SDU map<a class="headerlink" href="#sdu-map" title="Permalink to this headline">¶</a></h3>
 <p>The map of spatial decision units can either be provided by the user as a custom map, or generated automatically by ROOT as a regular grid of squares or hexagons. A user provided map makes sense when there are relevant decision boundaries, e.g. subwatershed outlines, a list of proposed projects, or political/ownership parcels. For a more generalized analysis, ROOT can generate a map of equal-area squares or hexagons.</p>
 </div>
-<div class="section" id="rasters">
-<h3>Rasters<a class="headerlink" href="#rasters" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="activity-boundary-rasters">
+<h3>Activity boundary rasters<a class="headerlink" href="#activity-boundary-rasters" title="Permalink to this headline">¶</a></h3>
+<p>These are rasters, one per activity, that indicate potential locations for that activity. When a particular activity is allocated to an SDU, ROOT will treat it as applying only the pixels (grid cells) indicated by the activity mask. That means only the values from the impact potential rasters that overlap with the potential activity pixels will be counted.</p>
+<p>The criteria used to construct the activity boundary rasters will depend on the decision context and the activity in question.</p>
+</div>
+<div class="section" id="impact-potential-rasters">
+<h3>Impact potential rasters<a class="headerlink" href="#impact-potential-rasters" title="Permalink to this headline">¶</a></h3>
 <p>Raster data captures spatially-explicit value of a given activity towards a given factor. For each raster, the preprocessing step will calculate the total score per SDU by summing all the pixels that overlap with allowed pixels in the corresponding mask.</p>
-<p><strong>Raster data + SDU grid –&gt; activity value table</strong></p>
+<p>The impact potential rasters can be generated in many different ways, and ROOT places no requirements on the source of the data. One important consideration is whether to use absolute or relative values. For example, for the service of carbon storage, the rasters could either contain values of expected mass of carbon for each land use, or contain the expected change from baseline for each activity. It is probably easier to choose one approach and apply it across all factors for the sake of consistency, but if a problem is more suited to a mixture of approaches, ROOT will still operate correctly.</p>
+<p><strong>Figure: Raster data + Activity Mask + SDU grid –&gt; activity value table</strong></p>
 </div>
 <div class="section" id="shapefiles">
 <h3>Shapefiles<a class="headerlink" href="#shapefiles" title="Permalink to this headline">¶</a></h3>
